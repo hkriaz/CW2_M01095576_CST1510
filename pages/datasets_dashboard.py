@@ -6,7 +6,7 @@ from pathlib import Path
 from app.data.db import connect_database
 from app.data.schema import create_all_tables
 from app.services.user_services import migrate_users_from_file
-from app.data.datasets import (insert_dataset, get_all_datasets, update_dataset, delete_dataset, get_dataset_by_id)
+from app.data.datasets import (insert_dataset, get_all_datasets, update_dataset, delete_dataset, get_dataset_by_id, get_uploaded_by_count())
 
 st.set_page_config(page_title='Datasets Metadata'
                     )
