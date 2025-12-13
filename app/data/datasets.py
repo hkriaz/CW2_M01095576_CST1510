@@ -1,47 +1,137 @@
 import pandas as pd
-from pathlib import Path
-import sqlite3
+from app.data.db import connect_database
 
-# Define paths relative to the project structure
-DATA_DIR = Path("DATA")
 
-def load_csv_to_table(conn: sqlite3.Connection, csv_filename: str, table_name: str, if_exists_policy='replace'):
+def insert_dataset(dataset_id, name, rows, columns, uploaded_by, upload_date, created_at):
     """
-    Reads a CSV file from the DATA directory and loads it into a specified 
-    SQLite database table using Pandas.
+    Insert new dataset metadata.
 
     Args:
-        conn: The active SQLite connection object.
-        csv_filename: The name of the CSV file (e.g., "Datasets_Metadata.csv").
-        table_name: The name of the database table (e.g., "datasets_metadata").
-        if_exists_policy: What to do if the table already exists. Options:
-                          'fail', 'replace', 'append'. Defaults to 'replace'.
-    
+        dataset_id: unique identifier
+        name: dataset name
+        rows: num of rows
+        columns: num of columns
+        uploaded_by: who uploaded it
+        upload_date: date of upload
+        created_at: date and time of creation
+
     Returns:
-        The number of rows loaded (int).
+        int: ID of inserted dataset
+        :param at:
     """
-    filepath = DATA_DIR / csv_filename
-    
-    if not filepath.exists():
-        print(f"⚠️ CSV file not found: {filepath}")
-        return 0
-    
-    try:
-        # 1. Read the CSV file into a Pandas DataFrame
-        df = pd.read_csv(filepath)
-        
-        # 2. Use the to_sql method for efficient insertion
-        # This handles column mapping and SQL generation automatically
-        rows_loaded = df.to_sql(
-            table_name, 
-            conn, 
-            if_exists=if_exists_policy, 
-            index=False # Don't write the DataFrame index as a column
-        )
-        
-        print(f"✅ Successfully loaded {rows_loaded} rows from {csv_filename} into table '{table_name}'.")
-        return rows_loaded
-    
-    except Exception as e:
-        print(f"❌ Error loading CSV {csv_filename} into {table_name}: {e}")
-        return 0
+    conn = connect_database()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO datasets_metadata 
+        (dataset_name, category, source, last_updated, record_count, file_size_mb)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (dataset_id, name, rows, columns, uploaded_by, upload_date, created_at))
+    conn.commit()
+    dataset_id = cursor.lastrowid
+    conn.close()
+    return dataset_id
+
+
+def get_all_datasets():
+    """
+    Get all datasets as DataFrame.
+
+    Returns:
+        pandas.DataFrame: All datasets
+    """
+    conn = connect_database()
+    df = pd.read_sql_query(
+        "SELECT * FROM datasets_metadata ORDER BY id DESC",
+        conn
+    )
+    conn.close()
+    return df
+
+
+def get_dataset_by_id(dataset_id):
+    """
+    Get a specific dataset by ID.
+
+    Args:
+        dataset_id: ID of the dataset
+
+    Returns:
+        tuple: Dataset record or None
+    """
+    conn = connect_database()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT * FROM datasets_metadata WHERE id = ?",
+        (dataset_id,)
+    )
+    dataset = cursor.fetchone()
+    conn.close()
+    return dataset
+
+
+def update_dataset(dataset_id, **kwargs):
+    """
+    Update dataset metadata fields.
+
+    Args:
+        dataset_id: ID of the dataset
+        **kwargs: Fields to update (e.g., last_updated='2024-11-05')
+
+    Returns:
+        int: Number of rows affected
+    """
+    conn = connect_database()
+    cursor = conn.cursor()
+
+    # Build dynamic UPDATE query
+    set_clause = ", ".join([f"{key} = ?" for key in kwargs.keys()])
+    values = list(kwargs.values()) + [dataset_id]
+
+    cursor.execute(
+        f"UPDATE datasets_metadata SET {set_clause} WHERE id = ?",
+        values
+    )
+    conn.commit()
+    rows_affected = cursor.rowcount
+    conn.close()
+    return rows_affected
+
+
+def delete_dataset(dataset_id):
+    """
+    Delete a dataset from the database.
+
+    Args:
+        dataset_id: ID of the dataset to delete
+
+    Returns:
+        int: Number of rows affected
+    """
+    conn = connect_database()
+    cursor = conn.cursor()
+    cursor.execute(
+        "DELETE FROM datasets_metadata WHERE id = ?",
+        (dataset_id,)
+    )
+    conn.commit()
+    rows_affected = cursor.rowcount
+    conn.close()
+    return rows_affected
+
+def get_uploaded_by_count():
+    """
+    Count uploaded by
+
+    Returns:
+        pandas.DataFrame: uploaded by counts
+    """
+    conn = connect_database()
+    query = """
+    SELECT uploaded_by, COUNT(*) AS count
+    FROM datasets_metadata
+    GROUP BY uploaded_by
+    ORDER BY count DESC
+    """
+    df = pd.read_sql_query(query, conn)
+    conn.close()
+    return df
