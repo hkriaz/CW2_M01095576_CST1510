@@ -1,10 +1,12 @@
-from app.data.db import connect_database 
-
-# The connection object (conn) is passed in as an argument
-
 def create_users_table(conn):
-    """Create the users table if it doesn't exist."""
+    """
+    Create the users table if it doesn't exist.
+
+    Args:
+        conn: Database connection object
+    """
     cursor = conn.cursor()
+
     create_table_sql = """
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -14,36 +16,50 @@ def create_users_table(conn):
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     """
+
     cursor.execute(create_table_sql)
     conn.commit()
     print("Users table created successfully!")
 
+
 def create_cyber_incidents_table(conn):
     """
     Create the cyber_incidents table.
+
+    Args:
+        conn: Database connection object
     """
     cursor = conn.cursor()
+
     create_table_sql = """
     CREATE TABLE IF NOT EXISTS cyber_incidents (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        date TEXT,
-        incident_type TEXT,
-        severity TEXT,
-        status TEXT,
+        incident_id TEXT NOT NULL,
+        timestamp TEXT NOT NULL,
+        severity TEXT NOT NULL,
+        category TEXT NOT NULL,
+        status TEXT NOT NULL,
         description TEXT,
         reported_by TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (reported_by) REFERENCES users(username)
     )
     """
+
     cursor.execute(create_table_sql)
     conn.commit()
-    print("Cyber Incidents table created successfully!")
+    print("Cyber incidents table created successfully!")
+
 
 def create_datasets_metadata_table(conn):
     """
     Create the datasets_metadata table.
+
+    Args:
+        conn: Database connection object
     """
     cursor = conn.cursor()
+
     create_table_sql = """
     CREATE TABLE IF NOT EXISTS datasets_metadata (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -56,15 +72,21 @@ def create_datasets_metadata_table(conn):
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     """
+
     cursor.execute(create_table_sql)
     conn.commit()
-    print("Datasets Metadata table created successfully!")
+    print("Datasets metadata table created successfully!")
+
 
 def create_it_tickets_table(conn):
     """
     Create the it_tickets table.
+
+    Args:
+        conn: Database connection object
     """
     cursor = conn.cursor()
+
     create_table_sql = """
     CREATE TABLE IF NOT EXISTS it_tickets (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -80,13 +102,21 @@ def create_it_tickets_table(conn):
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     """
+
     cursor.execute(create_table_sql)
     conn.commit()
-    print("IT Tickets table created successfully!")
+    print("IT tickets table created successfully!")
+
 
 def create_all_tables(conn):
-    """Create all tables."""
+    """
+    Create all tables in the database.
+
+    Args:
+        conn: Database connection object
+    """
     create_users_table(conn)
     create_cyber_incidents_table(conn)
     create_datasets_metadata_table(conn)
     create_it_tickets_table(conn)
+    print("\n All tables created successfully!")
