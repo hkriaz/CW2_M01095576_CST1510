@@ -8,10 +8,11 @@ from app.data.schema import create_all_tables
 from app.services.user_services import migrate_users_from_file
 from app.data.incidents import (
     insert_incident, get_all_incidents, update_incident_status,
-    delete_incident, get_incidents_by_type_count
+    delete_incident, get_incidents_by_type_count, get_severity_count
 )
 
-st.set_page_config(page_title='Cyber Incidents'
+st.set_page_config(page_title='Cyber Incidents',
+                   page_icon="img/mdi.jpg"
                     )
 
 def load_csv_to_table(csv_path, table_name):
@@ -108,6 +109,10 @@ def demo_analytics():
     df_incidents_id = get_incidents_by_type_count()
     st.dataframe(df_incidents_id)
 
+def chart_analysis():
+    data = get_severity_count()
+    st.bar_chart(data, x="severity", y = "count")
+
 
 st.title("Cyber Platform Dashboard")
 
@@ -118,10 +123,13 @@ with tabs[2]:
     if st.button("Run Setup"):
         setup_database()
 
-with tabs[0]:
+with tabs[1]:
     st.header("Incidents Dashboard with modification options")
     demo_crud_operations()
 
-with tabs[1]:
+with tabs[0]:
+    st.header("Chart Analysis")
+    st.subheader("Count of each severity")
+    chart_analysis()
     st.header("Incidents Analysis")
     demo_analytics()
