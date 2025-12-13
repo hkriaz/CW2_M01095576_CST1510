@@ -108,11 +108,15 @@ def demo_analytics():
     df_ticket_id = get_ticket_by_id(2008)
     st.dataframe(df_ticket_id)
 
+def chart_analysis():
+    data = get_priority_count()
+    st.bar_chart(data, x="priority", y = "count")
+
 st.title("It Tickets Dashboard")
 
 tabs = st.tabs(["Setup Database", "CRUD Incidents", "Analytics"])
 
-with tabs[0]:
+with tabs[2]:
     st.header("Database Setup")
     if st.button("Run Setup"):
         setup_database()
@@ -121,6 +125,9 @@ with tabs[1]:
     st.header("CRUD Operations on Tickets")
     demo_crud_operations()
 
-with tabs[2]:
+with tabs[0]:
+    st.header("Chart Analysis")
+    st.subheader("Count of each priority")
+    chart_analysis()
     st.header("Analytics")
     demo_analytics()
