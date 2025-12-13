@@ -6,7 +6,7 @@ from pathlib import Path
 from app.data.db import connect_database
 from app.data.schema import create_all_tables
 from app.services.user_services import register_user, login_user, migrate_users_from_file
-from app.data.tickets import (insert_ticket, get_all_tickets, update_ticket_status, delete_ticket, get_ticket_by_id)
+from app.data.tickets import (insert_ticket, get_all_tickets, update_ticket_status, delete_ticket, get_ticket_by_id, get_priority_count())
 
 st.set_page_config(page_title='It Tickets'
                     )
