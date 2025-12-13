@@ -98,17 +98,20 @@ def demo_crud_operations():
 
 def demo_analytics():
     st.subheader("Analytics Demo")
-
     st.write("#### All Datasets")
     df_datasets = get_all_datasets()
     st.dataframe(df_datasets)
+
+def chart_analysis():
+    data = get_uploaded_by_count()
+    st.bar_chart(data, x="uploaded_by", y="count")
 
 
 st.title("Datasets Metadata Dashboard")
 
 tabs = st.tabs(["Setup Database", "CRUD Incidents", "Analytics"])
 
-with tabs[0]:
+with tabs[2]:
     st.header("Database Setup")
     if st.button("Run Setup"):
         setup_database()
@@ -117,6 +120,9 @@ with tabs[1]:
     st.header("CRUD Operations on Datasets")
     demo_crud_operations()
 
-with tabs[2]:
+with tabs[0]:
+    st.header("Chart Analysis")
+    st.subheader("Count of each uploader")
+    chart_analysis()
     st.header("Analytics")
     demo_analytics()
